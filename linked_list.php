@@ -143,6 +143,11 @@ function dfll_init() {
 	register_setting('dfll_options','dfll_use_first_link');
 	register_setting('dfll_options','dfll_twitter_glyph_before_linked_list');
 	register_setting('dfll_options','dfll_twitter_glyph_before_non_linked_list');
+  register_setting('dfll_options','dfll_custom_category_name','dfll_custom_category_name_sanitize');
+	register_setting('dfll_options','dfll_custom_category_exclude');
+	register_setting('dfll_options','dfll_custom_category_desc','dfll_custom_category_desc_sanitize');
+	register_setting('dfll_options','dfll_use_custom_category','dfll_custom_category_sanitize');
+	register_setting('dfll_options','dfll_custom_category_hide_nav');
 	
 	if (!get_option('dfll_options')) {
 		define('DFLL_VERSION','2.8');
@@ -172,8 +177,100 @@ function dfll_init() {
     // add_settings_field("twitter_glyph_before_non_linked_list", "Insert glyph before non-linked list items in tweets", "twitter_glyph_before_non_callback", "dfll", "dfll_main4");
     // add_settings_field("twitter_glyph_before_linked_list", "Insert glyph before linked list items in tweets", "twitter_glyph_before_callback", "dfll", "dfll_main4");
   
+    add_settings_section("dfll_main4", "Custom Category", "dfll_text5", "dfll");
+    add_settings_field("use_custom_category", "Use custom category for post", "use_custom_category_callback", "dfll", "dfll_main4");
+    add_settings_field("custom_category_name", "", "custom_category_name_callback", "dfll", "dfll_main4");
+    add_settings_field("custom_category_desc", "", "custom_category_desc_callback", "dfll", "dfll_main4");
+    add_settings_field("use_custom_category_exclude", "Exclude custom category", "use_custom_category_exclude_callback", "dfll", "dfll_main4");
+    add_settings_field("custom_category_hide_nav", "Hide navigation for custom category", "custom_category_hide_nav_callback", "dfll", "dfll_main4");       
 }
 add_action('admin_init', 'dfll_init');
+
+function dfll_custom_category_name_sanitize($value) {
+  if($value != $oldValue) {
+    $oldValue = get_option('dfll_custom_category_name');
+    $cat = get_term_by( 'name', get_option('dfll_custom_category_name'), 'category' );
+    if( $cat != false ) {
+      wp_update_term($cat->term_id,'category',array('name' => $value));
+    } else {
+      wp_insert_term(
+        $value,
+        'category',
+        array('description' => '&#9733; Created by DF-Style Linked List Plugin')
+      );    
+    }
+  }
+  return $value;
+}
+
+function dfll_custom_category_desc_sanitize($value) {
+  $oldValue = get_option('dfll_custom_category_desc');
+  $cat = get_term_by( 'name', get_option('dfll_custom_category_name'), 'category' );
+  if( $cat != false ) {
+    wp_update_term($cat->term_id,'category',array('description' => $value));
+  }
+  return $value;
+}
+
+function dfll_custom_category_sanitize($value) {
+  if($value == null) {
+    $cat = get_term_by( 'name', get_option('dfll_custom_category_name'), 'category' );
+    if( $cat != false ) {
+      $d = wp_delete_category( $cat->term_id );
+    }  
+  }
+  return $value;
+}
+
+
+
+add_action( 'wp_insert_post', 'dfll_update_post_terms' );
+function dfll_update_post_terms( $post_id ) {
+    if( is_linked_list() ) {
+      $use_custom_category = get_option('dfll_use_custom_category');
+      if( $use_custom_category == 'on' ) {
+        if ( $parent = wp_is_post_revision( $post_id ) )
+            $post_id = $parent;
+        $post = get_post( $post_id );
+        if ( $post->post_type != 'post' )
+            return;
+    
+        // add a category
+        $categories = wp_get_post_categories( $post_id );
+        $newcat    = get_term_by( 'name', get_option('dfll_custom_category_name'), 'category' );
+        // if the category doesn't exist, create it
+        if( $newcat == false ) {
+          $insert_newcat = wp_insert_term(
+        		get_option('dfll_custom_category_name'),
+        		'category',
+        		array('description' => '&#9733; Created by DF-Style Linked List Plugin')
+        	);
+        	$id = $insert_newcat['term_id'];
+        } else {
+          $id = $newcat->term_id;
+        }
+        
+        // Linked list items should only use the designated caetgory
+        $cat_count = count($categories);
+        for($x=0; $x < $cat_count; $x++) {
+            unset($categories[$x]);
+        }
+        array_push( $categories, $id);
+        wp_set_post_categories( $post_id, $categories );
+      }
+    } else {
+      $categories = wp_get_post_categories( $post_id );
+      $newcat    = get_term_by( 'name', get_option('dfll_custom_category_name'), 'category' );
+      // Non-link list items should not use the custom category
+      $cat_count = count($categories);
+      for($x=0; $x < $cat_count; $x++) {
+        if($categories[$x] == $newcat->term_id) {
+          unset($categories[$x]);
+        }
+      }
+      wp_set_post_categories( $post_id, $categories );
+    }
+}
 
 
 
@@ -262,6 +359,42 @@ function use_first_link_callback() {
   echo "</div>";
 }
 
+function use_custom_category_callback() {
+  $checked = "";
+  if(get_option('dfll_use_custom_category')) { $checked = ' checked="checked" '; }
+  echo "<input " . $checked . " name='dfll_use_custom_category' type='checkbox' />";
+  echo " Selecting this option will create and use a custom category for link list posts.";
+}
+
+function use_custom_category_exclude_callback() {
+  $checked = "";
+  if(get_option('dfll_custom_category_exclude')) { $checked = ' checked="checked" '; }
+  echo "<input " . $checked . " name='dfll_custom_category_exclude' type='checkbox' />";
+  echo " Selecting this option will exclude the custom category from previous and next links.";
+}
+
+function custom_category_hide_nav_callback() {
+  $checked = "";
+  if(get_option('dfll_custom_category_hide_nav')) { $checked = ' checked="checked" '; }
+  echo "<input " . $checked . " name='dfll_custom_category_hide_nav' type='checkbox' />";
+  echo " Selecting this option will hide next and previous links for posts in this custom category when viewing the full post.";
+}
+
+function custom_category_name_callback() {
+  $style = '';
+  echo "<label for='input4'>Category name: </label>";
+  echo "<input {$style} name='dfll_custom_category_name' size='12' type='text' value='" . get_option('dfll_custom_category_name') . "' id='input4' /> <span class='eg'>e.g. Link List Items.  ";
+  if (!get_option('dfll_custom_category_name')) echo "(Remember to check the checkbox above.)";
+  echo "</span>";  
+}
+
+function custom_category_desc_callback() {
+  $style = '';
+  echo "<label for='input4'>Category Description: </label>";
+  echo "<input {$style} name='dfll_custom_category_desc' size='50' type='text' value='" . get_option('dfll_custom_category_desc') . "' id='input4' /> <span class='eg'>e.g. '&#9733; Created by DF-Style Linked List Plugin";
+  echo "</span>";  
+}
+
 function twitter_glyph_before_non_callback() {
   $checked = '';	
   if(get_option('dfll_twitter_glyph_before_non_linked_list')) { $checked = ' checked="checked" ';}
@@ -294,6 +427,10 @@ function dfll_text3() {
 
 function dfll_text4() {
   echo "<p>This section customises whether your glyph shows up in auto-tweets. You must have the <a href='http://wordpress.org/extend/plugins/twitter-tools/'>Twitter Tools</a> plugin installed.</p><p><b>Important</b>: Please note that there are quite a few steps to follow if you want to use this feature. Refer to the 'Twitter Tools' section on <a href='http://yjsoon.com/dfll-plugin'>this post</a> to proceed.";
+}
+
+function dfll_text5() {
+  echo "<p>This section customizes whether your you use a custom category for link list posts.";
 }
 
 /* Add default options */
@@ -529,6 +666,43 @@ add_filter('plugin_action_links', 'dfll_plugin_action_links', 10, 2);
 //         update_post_meta( $post_id, $custom_field, mysql_real_escape_string($_POST['url']) );
 // }
 
+/* Manipulating the previous and next buttons
+------------------------------------------------------------------------------ */
+add_filter( 'get_previous_post_where', 'dfll_mod_adjacent_bis_where' );
+add_filter( 'get_next_post_where', 'dfll_mod_adjacent_bis_where' );
 
+/** 
+ * get_{$adjacent}_post_where hook
+ */
+function dfll_mod_adjacent_bis_where( $where ) {
+  $use_custom_category = get_option('dfll_use_custom_category');
+  $exlude_custom_category = get_option('dfll_custom_category_exclude');
+  $hide_nav = get_option('dfll_custom_category_hide_nav');
+  if( is_linked_list() ) {
+  	$where .= " AND 1 = 0 "; // This might be a bit of a hack, but it works.
+	} else if( $use_custom_category == 'on' && $exlude_custom_category == 'on') {
+    global $wpdb;
+    $where .= " AND $wpdb->terms.name != '".get_option('dfll_custom_category_name')."'
+  	AND $wpdb->term_taxonomy.taxonomy = 'category' ";
+	}
+	
+	return $where;
+}
+
+add_filter( 'get_previous_post_join', 'dfll_mod_adjacent_bis_join' );
+add_filter( 'get_next_post_join', 'dfll_mod_adjacent_bis_join' );
+
+/** 
+ * get_{$adjacent}_post_join hook
+ */
+function dfll_mod_adjacent_bis_join( $join ) {
+  $use_custom_category = get_option('dfll_use_custom_category');
+  $exlude_custom_category = get_option('dfll_custom_category_exclude');
+  if( $use_custom_category == 'on' && $exlude_custom_category == 'on') {
+    global $wpdb;
+    $join .= " LEFT JOIN $wpdb->term_relationships ON $wpdb->term_relationships.object_id = p.ID LEFT JOIN $wpdb->term_taxonomy on $wpdb->term_taxonomy.term_taxonomy_id = $wpdb->term_relationships.term_taxonomy_id LEFT JOIN $wpdb->terms ON $wpdb->term_taxonomy.term_id = $wpdb->terms.term_id ";
+  }
+  return $join;
+}
 
 ?>
