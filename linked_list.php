@@ -8,6 +8,9 @@ Version: 2.8
 Author URI: http://yjsoon.com/dfll-plugin
 */
 
+define('DFLL_DELETE_CATEGORY_DEFAULT_DESC', '&#9733; Created by DF-Style Linked List Plugin.');
+define('DFLL_DELETE_CATEGORY_WARNING', '<strong>NOTE</strong>: If you delete this, it will disable the link list custom category options.');
+
 /*-----------------------------------------------------------------------------
   For theme developers - these should be all you need to refer to
 -----------------------------------------------------------------------------*/
@@ -196,7 +199,7 @@ function dfll_custom_category_name_sanitize($value) {
       wp_insert_term(
         $value,
         'category',
-        array('description' => '&#9733; Created by DF-Style Linked List Plugin')
+        array('slug' => $slug,'description' => DFLL_DELETE_CATEGORY_DEFAULT_DESC.'&nbsp;&nbsp;'.DFLL_DELETE_CATEGORY_WARNING)
       );    
     }
   }
@@ -206,8 +209,8 @@ function dfll_custom_category_name_sanitize($value) {
 function dfll_custom_category_desc_sanitize($value) {
   $oldValue = get_option('dfll_custom_category_desc');
   $cat = get_term_by( 'name', get_option('dfll_custom_category_name'), 'category' );
-  if( $cat != false ) {
-    wp_update_term($cat->term_id,'category',array('description' => $value));
+  if( false != $cat ) {
+    wp_update_term($cat->term_id,'category',array('description' => $value.'&nbsp;&nbsp;'.DFLL_DELETE_CATEGORY_WARNING));
   }
   return $value;
 }
@@ -243,7 +246,7 @@ function dfll_update_post_terms( $post_id ) {
           $insert_newcat = wp_insert_term(
         		get_option('dfll_custom_category_name'),
         		'category',
-        		array('description' => '&#9733; Created by DF-Style Linked List Plugin')
+        		array('description' => DFLL_DELETE_CATEGORY_DEFAULT_DESC.'&nbsp;&nbsp;'.DFLL_DELETE_CATEGORY_WARNING)
         	);
         	$id = $insert_newcat['term_id'];
         } else {
