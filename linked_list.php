@@ -225,6 +225,12 @@ function dfll_custom_category_sanitize($value) {
   return $value;
 }
 
+add_action( 'delete_term', 'dfll_custom_category_delete',10,4 );
+function dfll_custom_category_delete( $term, $tt_id, $taxonomy, $deleted_term ) {
+		if( $deleted_term->name == get_option('dfll_custom_category_name') ) {
+			update_option('dfll_use_custom_category',false);	
+		}
+}
 
 
 add_action( 'wp_insert_post', 'dfll_update_post_terms' );
