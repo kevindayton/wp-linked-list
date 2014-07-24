@@ -380,7 +380,7 @@ function use_custom_category_exclude_callback() {
   $checked = "";
   if(get_option('dfll_custom_category_exclude')) { $checked = ' checked="checked" '; }
   echo "<input " . $checked . " name='dfll_custom_category_exclude' type='checkbox' />";
-  echo " Selecting this option will exclude the custom category from previous and next links.";
+  echo " Selecting this option will exclude the post in the custom category from previous and next links.";
 }
 
 function custom_category_hide_nav_callback() {
@@ -685,17 +685,24 @@ add_filter( 'get_next_post_where', 'dfll_mod_adjacent_bis_where' );
  * get_{$adjacent}_post_where hook
  */
 function dfll_mod_adjacent_bis_where( $where ) {
+  global $wpdb;
   $use_custom_category = get_option('dfll_use_custom_category');
   $exlude_custom_category = get_option('dfll_custom_category_exclude');
   $hide_nav = get_option('dfll_custom_category_hide_nav');
-  if( is_linked_list() ) {
+  if( $use_custom_category == 'on' && is_linked_list() && $hide_nav == 'on') {
   	$where .= " AND 1 = 0 "; // This might be a bit of a hack, but it works.
-	} else if( $use_custom_category == 'on' && $exlude_custom_category == 'on') {
-    global $wpdb;
-    $where .= " AND $wpdb->terms.name != '".get_option('dfll_custom_category_name')."'
-  	AND $wpdb->term_taxonomy.taxonomy = 'category' ";
-	}
-	
+	} else if( $use_custom_category == 'on') {
+	    if(is_linked_list()) {
+  	    if( $exlude_custom_category == 'on' && $hide_nav == 'on') {
+          $where .= " AND $wpdb->terms.name = '".get_option('dfll_custom_category_name')."'
+          AND $wpdb->term_taxonomy.taxonomy = 'category' ";
+        } 
+      } else if( $use_custom_category == 'on' && $exlude_custom_category == 'on') {
+        $where .= " AND $wpdb->terms.name != '".get_option('dfll_custom_category_name')."'
+        AND $wpdb->term_taxonomy.taxonomy = 'category' ";
+      }
+  }
+
 	return $where;
 }
 
