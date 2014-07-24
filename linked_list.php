@@ -298,12 +298,12 @@ function glyph_after_post_callback() {
   $checked = "";
   if(get_option('dfll_glyph_after_post')) { $checked = ' checked="checked" '; }
   echo "<input " . $checked . " name='dfll_glyph_after_post' type='checkbox' />";
-  echo " At the bottom of each linked list blog post, show a permalink bringing you back to your blog post. On DF, this is ★ (which you should enter as &amp;#9733;). <em>Note for theme customizers</em>: this is what's returned in get_glyph() (just the text) and get_the_permalink_glyph() (text wrapped inside an anchor).";
+  echo " At the bottom of each linked list blog post, show a permalink bringing you back to your blog post. On DF, this is &#9733; (which you should enter as &amp;#9733;). <em>Note for theme customizers</em>: this is what's returned in get_glyph() (just the text) and get_the_permalink_glyph() (text wrapped inside an anchor).";
 }
 
 function glyph_after_post_text_callback() { 
   echo "<label for='input1'>Text for permalink: </label>";
-  echo "<input name='dfll_glyph_after_post_text' size='12' type='text' value='" . get_option('dfll_glyph_after_post_text') . "' id='input1' /> <span class='eg'>e.g. &amp;#9733; (★) or Permalink. ";
+  echo "<input name='dfll_glyph_after_post_text' size='12' type='text' value='" . get_option('dfll_glyph_after_post_text') . "' id='input1' /> <span class='eg'>e.g. &amp;#9733; (&#9733;) or Permalink. ";
   if (!get_option('dfll_glyph_after_post')) echo "Remember to check the checkbox above.";
   echo "</span>";
 }
@@ -342,13 +342,13 @@ function glyph_before_blog_title_callback() {
   $checked = "";
   if(get_option('dfll_glyph_before_blog_title')) { $checked = ' checked="checked" '; }
   echo "<input " . $checked . " name='dfll_glyph_before_blog_title' type='checkbox' />";
-  echo " Show text before blog article titles in the RSS feed. This helps distinguish them from link posts, which is useful if you link more than you post. DF has a ★ (which you should enter as &amp;#9733;) in front of such articles.";
+  echo " Show text before blog article titles in the RSS feed. This helps distinguish them from link posts, which is useful if you link more than you post. DF has a &#9733; (which you should enter as &amp;#9733;) in front of such articles.";
 }
 
 function glyph_before_blog_title_text_callback() {
   $style = '';
   echo "<label for='input4'>Text to display: </label>";
-  echo "<input {$style} name='dfll_glyph_before_blog_title_text' size='12' type='text' value='" . get_option('dfll_glyph_before_blog_title_text') . "' id='input4' /> <span class='eg'>e.g. &amp;#9733; (★). ";
+  echo "<input {$style} name='dfll_glyph_before_blog_title_text' size='12' type='text' value='" . get_option('dfll_glyph_before_blog_title_text') . "' id='input4' /> <span class='eg'>e.g. &amp;#9733; (&#9733;). ";
   if (!get_option('dfll_glyph_before_blog_title')) echo "Remember to check the checkbox above.";
   echo "</span>";  
 }
