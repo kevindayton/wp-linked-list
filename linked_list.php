@@ -191,10 +191,11 @@ add_action('admin_init', 'dfll_init');
 
 function dfll_custom_category_name_sanitize($value) {
   if($value != $oldValue) {
-    $oldValue = get_option('dfll_custom_category_name');
+  	$slug = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $value);
+  	$oldValue = get_option('dfll_custom_category_name');
     $cat = get_term_by( 'name', get_option('dfll_custom_category_name'), 'category' );
     if( $cat != false ) {
-      wp_update_term($cat->term_id,'category',array('name' => $value));
+      wp_update_term($cat->term_id,'category',array('name' => $value, 'slug' => $slug));
     } else {
       wp_insert_term(
         $value,
