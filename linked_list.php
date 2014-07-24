@@ -216,9 +216,9 @@ function dfll_custom_category_desc_sanitize($value) {
 }
 
 function dfll_custom_category_sanitize($value) {
-  if($value == null) {
+  if(null == $value) {
     $cat = get_term_by( 'name', get_option('dfll_custom_category_name'), 'category' );
-    if( $cat != false ) {
+    if( false != $cat ) {
       $d = wp_delete_category( $cat->term_id );
     }  
   }
@@ -231,7 +231,7 @@ add_action( 'wp_insert_post', 'dfll_update_post_terms' );
 function dfll_update_post_terms( $post_id ) {
     if( is_linked_list() ) {
       $use_custom_category = get_option('dfll_use_custom_category');
-      if( $use_custom_category == 'on' ) {
+      if( 'on' == $use_custom_category ) {
         if ( $parent = wp_is_post_revision( $post_id ) )
             $post_id = $parent;
         $post = get_post( $post_id );
@@ -242,7 +242,7 @@ function dfll_update_post_terms( $post_id ) {
         $categories = wp_get_post_categories( $post_id );
         $newcat    = get_term_by( 'name', get_option('dfll_custom_category_name'), 'category' );
         // if the category doesn't exist, create it
-        if( $newcat == false ) {
+        if( false == $newcat ) {
           $insert_newcat = wp_insert_term(
         		get_option('dfll_custom_category_name'),
         		'category',
