@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: DF-Style Linked List
-Plugin URI: https://github.com/kevindayton/df-style-linked-list_wordpress-plugin/releases
-Description: Make your blog's RSS feed behave like <a href="http://daringfireball.net">Daring Fireball</a>. To use, set the custom field "linked_list_url" to the desired location on a link post. See "DF-Style Linked List" under WordPress Settings for more options. <strong>NEW</strong>: Now supports "Post This" and Twitter Tools integration &mdash; please see settings page for more details or to enable these features.
+Plugin Name: WP Linked List
+Plugin URI: https://github.com/kevindayton/wp-linked-list/releases
+Description: This is a fork of Yinjie Soon's DFLL-Plugin.  Make your blog's RSS feed behave like <a href="http://daringfireball.net">Daring Fireball</a>. To use, set the custom field "linked_list_url" to the desired location on a link post. See "DF-Style Linked List" under WordPress Settings for more options. <strong>NEW</strong>: Now supports "Post This" and Twitter Tools integration &mdash; please see settings page for more details or to enable these features.
 Author: Yinjie Soon
 Version: 2.9
 Author URI: http://yjsoon.com/dfll-plugin
