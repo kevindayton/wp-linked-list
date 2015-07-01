@@ -44,7 +44,7 @@ function is_linked_list() {
   // $url = get_post_meta($postid, 'linked_list_url', true);
   $url = get_post_custom_values('linked_list_url');
   if (!empty($url)) {
-    $GLOBALS['dfllCustomFieldValue'] = $link;
+    $GLOBALS['dfllCustomFieldValue'] = $url;
     return true;
   } 
   return false;
